@@ -1,8 +1,9 @@
 import { GetServerSideProps } from "next"
-import { getSession } from "next-auth/client"
-import Head from "next/head"
-import { RichText } from "prismic-dom"
-import { getPrismicClient } from "../../services/prismic"
+import { getSession } from "next-auth/client";
+import Head from "next/head";
+import { RichText } from "prismic-dom";
+import React from "react";
+import { getPrismicClient } from "../../services/prismic";
 
 import styles from './post.module.scss'
 
@@ -15,33 +16,33 @@ interface PostProps {
     }
 }
 
-export default function Post({post}: PostProps) {
+export default function Posts({post}: PostProps) {
     return (
         <>
-            <Head>
-                <title>{post.title} | IGNews</title>
-            </Head>
-
-            <main className={styles.container}>
-                <article className={styles.post}>
-                    <h1>{post.title}</h1>
-                    <time>{post.updatedAt}</time>     
-                    <div className={styles.postContent} dangerouslySetInnerHTML={{__html:post.content}} />
-                </article>
-            </main>
+        <Head>
+            <title>{post.title} | Ignews</title>
+        </Head>
+        <main className={styles.container}>
+            <article className={styles.post}>
+                <h1>{post.title}</h1>
+                <time>{post.updatedAt}</time>
+                <div className={styles.postContent} dangerouslySetInnerHTML={{ __html: post.content}} />
+            </article>
+        </main>
         </>
     )
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ req, params }) => {
+export const getServerSideProps: GetServerSideProps = async ({req, params}) => {
     const session = await getSession({req})
-    const { slug } = params;
+    const {slug} = params;
 
-    if(!session?.activeSubscription) {
+    console.log(session)
+    if (!session?.activeSubscription) {
         return {
             redirect: {
                 destination: '/',
-                permanent: false
+                permanent: false,
             }
         }
     }
@@ -49,15 +50,6 @@ export const getServerSideProps: GetServerSideProps = async ({ req, params }) =>
     const prismic = getPrismicClient(req)
 
     const response = await prismic.getByUID('post', String(slug), {})
-
-    if (!response) {
-        return {
-          redirect: {
-            destination: '/',
-            permanent: false
-          }
-        }
-      }
 
     const post = {
         slug,
@@ -68,11 +60,13 @@ export const getServerSideProps: GetServerSideProps = async ({ req, params }) =>
             month: 'long',
             year: 'numeric'
         })
-    }
+        
+    };
 
     return {
-        props : {
-            post
+        props: {
+            post,
         }
     }
+
 }
